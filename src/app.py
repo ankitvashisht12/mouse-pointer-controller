@@ -10,7 +10,7 @@ def main():
     input_feed = InputFeeder('cam')
     input_feed.load_data()
     for batch in input_feed.next_batch():
-        pass
+        print(batch)
     input_feed.close()
 
 
