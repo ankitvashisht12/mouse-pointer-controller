@@ -3,9 +3,9 @@ This is a sample class for a model. You may choose to use it as-is or make any c
 This has been provided just to give you an idea of how to structure your model class.
 '''
 
-class Model_X:
+class Model_Facial_Landmark_Detection:
     '''
-    Class for the Face Detection Model.
+    Class for the Facial Landmark Detection Model.
     '''
     def __init__(self, model_name, device='CPU', extensions=None):
         '''
