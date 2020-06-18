@@ -19,7 +19,8 @@ def get_args():
     parser.add_argument("-p", "--input_path", required=False, type=str, help="Specify input file path")
     return parser.parse_args()
 
-
+def crop_image(frame, outs):
+    pass
 
 def main():
     args =  get_args()
@@ -36,24 +37,26 @@ def main():
         fd.preprocess_input(frame)
         outs_fd = fd.predict()
 
-        ld = Model_Facial_Landmark_Detection(args.landmark_detection, args.device, args.extention)
-        ld.load_model()
-        ld.preprocess_input(???)  # TODO: Check input - outs_fd
-        outs_ld = ld.predict()
+        cropped_face = crop_image(frame.copy(), outs_fd)
 
-        hp = Model_Head_Pose_Estimation()
-        hp.load_model()
-        hp.preprocess_input(???) # TODO: Check input - outs_fd
-        outs_hp = hp.predict()
+        # ld = Model_Facial_Landmark_Detection(args.landmark_detection, args.device, args.extention)
+        # ld.load_model()
+        # ld.preprocess_input(???)  # TODO: Check input - outs_fd
+        # outs_ld = ld.predict()
 
-        gd = Model_Gaze_Estimation()
-        gd.load_model()
-        gd.preprocess_input(???)
-        outs_gd = gd.predict()
+        # hp = Model_Head_Pose_Estimation()
+        # hp.load_model()
+        # hp.preprocess_input(???) # TODO: Check input - outs_fd
+        # outs_hp = hp.predict()
 
-        ## Control Mouse pointer 
-        mc = MouseController(???, ???)
-        mc.move()
+        # gd = Model_Gaze_Estimation()
+        # gd.load_model()
+        # gd.preprocess_input(???)
+        # outs_gd = gd.predict()
+
+        # ## Control Mouse pointer 
+        # mc = MouseController(???, ???)
+        # mc.move()
 
     input_feed.close()
 
