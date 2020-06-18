@@ -16,7 +16,7 @@ class Model_Face_Detection:
         TODO: Use this to set your instance variables.
         '''
         self.model_structure = model_name
-        self.model_weights = os.path.spiltext(model_name)[0] + '.bin'
+        self.model_weights = os.path.splitext(model_name)[0] + '.bin'
         self.device = device
         self.extensions = extensions
         self.core = None
@@ -64,7 +64,7 @@ class Model_Face_Detection:
 
         img = self.preprocess_input(image)
         res = self.exec_net.infer({self.input_blob: img})
-        out = self.preprocess_output(res, w , h)
+        out = self.preprocess_output(res["detection_out"], w , h)
         return out
 
     def check_model(self):
@@ -99,6 +99,6 @@ class Model_Face_Detection:
         outs = []
         for box in outputs[0][0]:
             if box[1] == 1 and box[2] > 0.60:
-                outs.append([box[3]*w, box[4]*h, box[5]*w, box[6]*h])
+                outs.append([int(box[3]*w), int(box[4]*h), int(box[5]*w), int(box[6]*h)])
 
         return outs
