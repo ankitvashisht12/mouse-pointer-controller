@@ -35,7 +35,7 @@ def main():
         fd.load_model()
         outs_fd = fd.predict(frame)
        
-        
+        cropped_face = None
         
         if len(outs_fd) != 0:
 
@@ -68,7 +68,6 @@ def main():
 
         # ld = Model_Facial_Landmark_Detection(args.landmark_detection, args.device, args.extention)
         # ld.load_model()
-        # ld.preprocess_input(???)  # TODO: Check input - outs_fd
         # outs_ld = ld.predict()
 
         # hp = Model_Head_Pose_Estimation()
