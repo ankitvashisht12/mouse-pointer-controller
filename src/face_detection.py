@@ -34,8 +34,9 @@ class Model_Face_Detection:
         If your model requires any Plugins, this is where you can load them.
         '''
         self.core = IECore()
-        self.model = IENetwork(self.model_structure, self.model_weights)
+        self.model = self.core.read_network(self.model_structure, self.model_weights)
 
+    
 
         # Add Extension if provided
         if self.extensions and self.device=="CPU":
