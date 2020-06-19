@@ -11,7 +11,7 @@ import numpy as np
 def get_args():
     parser = ArgumentParser()
     parser.add_argument("-m1", "--face_detection", required=True, type=str, help="Path to face detection")
-    # parser.add_argument("-m2", "--landmark_detection", required=True, type=str, help="Path to landmark detection model")
+    parser.add_argument("-m2", "--landmark_detection", required=True, type=str, help="Path to landmark detection model")
     # parser.add_argument("-m3", "--head_pose_detection", required=True, type=str, help="Path to head pose detection model")
     # parser.add_argument("-m4", "--gaze_detection", required=True, type=str, help="Path to gaze detection model")
     parser.add_argument("-d", "--device", required=False, type=str, help="Specify device", default="CPU")
@@ -20,8 +20,6 @@ def get_args():
     parser.add_argument("-p", "--input_path", required=False, type=str, help="Specify input file path", default=None)
     return parser.parse_args()
 
-def crop_image(frame, outs):
-    pass
 
 
 def main():
@@ -35,7 +33,7 @@ def main():
         fd.load_model()
         outs_fd = fd.predict(frame)
        
-        cropped_face = None
+        cropped_face = []
         
         if len(outs_fd) != 0:
 
@@ -55,6 +53,24 @@ def main():
             # Uncomment to see cropped face
             # cv2.imshow("Cropped Face", cropped_face)
             # cv2.waitKey(5)
+
+            ld = Model_Facial_Landmark_Detection(args.landmark_detection, args.device, args.extention)
+            ld.load_model()
+
+            outs_ld = ld.predict(cropped_face)
+            if len(outs_ld) != 0:
+            
+
+                p1 = tuple(sum(x) for x in zip(outs_ld[0][0], start_point)) 
+                p2 = tuple(sum(x) for x in zip(outs_ld[0][1], start_point))
+                p3 = tuple(sum(x) for x in zip(outs_ld[0][2], start_point))
+                p4 = tuple(sum(x) for x in zip(outs_ld[0][3], start_point))
+                
+                show_frame = cv2.circle(show_frame, p1, 2, (0, 0, 255), thickness=-5)
+                show_frame = cv2.circle(show_frame, p2, 2, (0, 0, 255), thickness=-5)
+                show_frame = cv2.circle(show_frame, p3, 2, (0, 0, 255), thickness=-5)
+                show_frame = cv2.circle(show_frame, p4, 2, (0, 0, 255), thickness=-5)
+
         else:
             show_frame = frame
         
@@ -65,10 +81,32 @@ def main():
         #     break
         
         
-
+        
         # ld = Model_Facial_Landmark_Detection(args.landmark_detection, args.device, args.extention)
         # ld.load_model()
-        # outs_ld = ld.predict()
+        # if len(cropped_face) != 0: 
+        #     outs_ld = ld.predict(cropped_face)
+        #     if len(outs_ld) != 0:
+        #         p1 = outs_ld[0][0]
+        #         p2 = outs_ld[0][1]
+        #         p3 = outs_ld[0][2]
+        #         p4 = outs_ld[0][3]
+
+        #         # show_frame[p1[0], p1[1]] = [255, 0, 0]
+        #         # show_frame[p2[0], p2[1]] = [255, 0, 0]
+        #         # show_frame[p3[0], p3[1]] = [0, 0, 255]
+        #         # show_frame[p4[0], p4[1]] = [0, 0, 255]
+               
+        #         show_frame = cv2.circle(show_frame, p1, 2, (0, 0, 255), thickness=-5)
+        #         show_frame = cv2.circle(show_frame, p2, 2, (0, 0, 255), thickness=-5)
+        #         show_frame = cv2.circle(show_frame, p3, 2, (0, 0, 255), thickness=-5)
+        #         show_frame = cv2.circle(show_frame, p4, 2, (0, 0, 255), thickness=-5)
+
+        cv2.imshow("Capturing", show_frame)
+        key = cv2.waitKey(1)
+        if key == ord('q'):
+            break
+
 
         # hp = Model_Head_Pose_Estimation()
         # hp.load_model()
