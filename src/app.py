@@ -12,7 +12,7 @@ def get_args():
     parser = ArgumentParser()
     parser.add_argument("-m1", "--face_detection", required=True, type=str, help="Path to face detection")
     parser.add_argument("-m2", "--landmark_detection", required=True, type=str, help="Path to landmark detection model")
-    # parser.add_argument("-m3", "--head_pose_detection", required=True, type=str, help="Path to head pose detection model")
+    parser.add_argument("-m3", "--head_pose_detection", required=True, type=str, help="Path to head pose detection model")
     # parser.add_argument("-m4", "--gaze_detection", required=True, type=str, help="Path to gaze detection model")
     parser.add_argument("-d", "--device", required=False, type=str, help="Specify device", default="CPU")
     parser.add_argument("-e", "--extention", required=False, type=str, help="Specify CPU extention", default=None)
@@ -31,13 +31,13 @@ def main():
     fd = Model_Face_Detection(args.face_detection, args.device, args.extention)
     ld = Model_Facial_Landmark_Detection(args.landmark_detection, args.device, args.extention)
     hp = Model_Head_Pose_Estimation(args.head_pose_detection, args.device, args.extention)
-    gd = Model_Gaze_Estimation(args.gaze_detection, args.device, args.extention)
+    #gd = Model_Gaze_Estimation(args.gaze_detection, args.device, args.extention)
 
     # load models
     fd.load_model()
     ld.load_model()
     hp.load_model()
-    gd.load_model()
+    #gd.load_model()
 
     # Initialize input feed and load data
     input_feed = InputFeeder(args.input_file, args.input_path)
@@ -69,8 +69,7 @@ def main():
             # cv2.imshow("Cropped Face", cropped_face)
             # cv2.waitKey(5)
 
-            ld = Model_Facial_Landmark_Detection(args.landmark_detection, args.device, args.extention)
-            
+           
 
             outs_ld = ld.predict(cropped_face.copy())
             if len(outs_ld) != 0:
@@ -86,18 +85,18 @@ def main():
                 show_frame = cv2.circle(show_frame, p3, 2, (0, 0, 255), thickness=-5)
                 show_frame = cv2.circle(show_frame, p4, 2, (0, 0, 255), thickness=-5)
             
-            outs_hp = hp.predict(cropped_face.copy())
-            if len(outs_hp) != 0:
-                # TODO
+            
+            p, r, y = hp.predict(cropped_face.copy())  # pitch, roll, yaw
+                
 
         else:
             show_frame = frame
         
         # Uncomment for video stream with bounding box on face
-        cv2.imshow("Capturing", show_frame)
-        key = cv2.waitKey(1)
-        if key == ord('q'):
-            break
+        # cv2.imshow("Capturing", show_frame)
+        # key = cv2.waitKey(1)
+        # if key == ord('q'):
+        #     break
 
         # ## Control Mouse pointer 
         # mc = MouseController(???, ???)
