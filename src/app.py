@@ -110,8 +110,8 @@ def main():
             p, r, y = hp.predict(cropped_face.copy())  
                 
             # gaze estimation
-            outs_gd = gd.predict(left_eye, right_eye, np.array([[p, r, y]]))
-            
+            outs_gd = gd.predict(left_eye, right_eye, np.array([[y, p, r]]))
+
             
         else:
             show_frame = frame
