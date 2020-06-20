@@ -112,19 +112,21 @@ def main():
             # gaze estimation
             outs_gd = gd.predict(left_eye, right_eye, np.array([[y, p, r]]))
 
+            ## Control Mouse pointer 
+            mc = MouseController("high", "fast")
+            if len(outs_gd) != 0:
+                mc.move(outs_gd[0], outs_gd[1])
+
             
         else:
             show_frame = frame
         
         # Uncomment for video stream with bounding box on face
-        # cv2.imshow("Capturing", show_frame)
-        # key = cv2.waitKey(1)
-        # if key == ord('q'):
-        #     break
+        cv2.imshow("Capturing", show_frame)
+        key = cv2.waitKey(1)
+        if key == ord('q'):
+            break
 
-        # ## Control Mouse pointer 
-        # mc = MouseController(???, ???)
-        # mc.move()
 
     input_feed.close()
 

@@ -60,10 +60,9 @@ class Model_Gaze_Estimation:
 
         left_eye = self.preprocess_input(left_eye)
         right_eye = self.preprocess_input(right_eye)
-        print(head_pose_outs)
         inputs = {"head_pose_angles" : head_pose_outs, "left_eye_image" : left_eye, "right_eye_image" : right_eye}
         res = self.exec_net.infer(inputs)
-        print("gd result", res)
+        
         return res['gaze_vector'][0]
         
 
