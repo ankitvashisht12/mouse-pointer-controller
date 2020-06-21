@@ -1,15 +1,69 @@
 # Computer Pointer Controller
 
-*TODO:* Write a short introduction to your project
+Computer Pointer Controller app is an Edge AI application which is used to control the movement of mouse pointer by the direction of eye gaze and pose of person's head. This application requires webcam or video feed as input and by using the Gaze detection model, it will move the mouse curson using `pyautogui` library.
 
 ## Project Set Up and Installation
-*TODO:* Explain the setup procedures to run your project. For instance, this can include your project directory structure, the models you need to download and where to place them etc. Also include details about how to install the dependencies your project requires.
+
+## Setup
+
+> NOTE : You'll need to install the [Openvion toolkit](https://docs.openvinotoolkit.org/latest/_docs_install_guides_installing_openvino_linux.html) and required libraries from `requirements.txt` file.
+
+- Step 1 : Download this project
+- Step 2 : Initialize the openVINO environment using the following command
+
+`source /opt/intel/openvino/bin/setupvars.sh -pyver 3.5`
+
+> Note : For windows, you may need to refer the docs
+
+- Step 3 : Download the required models by using OpenVINO model downloader
+	1. **Face Detection model** 
+``` py
+python /opt/intel/openvino/deployment_tools/tools/model_downloader/downloader.py --name "face-detection-adas-binary-0001" 
+```
+	2. **Facial Landmark detection model**
+```py
+python /opt/intel/openvino/deployment_tools/tools/model_downloader/downloader.py --name "landmarks-regression-retail-0009"
+```
+
+	3. **Head pose Detection model** :
+
+```py
+python /opt/intel/openvino/deployment_tools/tools/model_downloader/downloader.py --name "head-pose-estimation-adas-0001"
+```
+
+	4. **Gaze Estimation model** :
+	
+```py
+python /opt/intel/openvino/deployment_tools/tools/model_downloader/downloader.py --name "gaze-estimation-adas-0002"
+```
+
+> Note : Move the models into root directory of the project in `models` directory.
 
 ## Demo
-*TODO:* Explain how to run a basic demo of your model.
+
+To run the basic demo :
+
+- Open Terminal / CMD and change the directory to root directory of the project
+- Use the following command to run the app
+
+```py
+python src/app.py -m1 "Path of face detection xml file" \
+	-m2 "Path of facial landmark detection xml file" \ 
+	-m3 "Path of head pose detection xml file" \
+	-m4 "Path of Gaze Estimation xml file" \
+	-d "device type (CPU for cpu and GPU for gpu and HETERO:FPGA,CPU for FPGA)" \
+	-i "input type (cam for webcam and video for video file)" \
+	-p "path to video file if input type is video"
+```
 
 ## Documentation
-*TODO:* Include any documentation that users might need to better understand your project code. For instance, this is a good place to explain the command line arguments that your project supports.
+
+**Model Documentations** : 
+
+1. [Face Detection model](https://docs.openvinotoolkit.org/latest/_models_intel_face_detection_adas_0001_description_face_detection_adas_0001.html) 
+2. [Facial Landmark detection model](https://docs.openvinotoolkit.org/latest/_models_intel_facial_landmarks_35_adas_0002_description_facial_landmarks_35_adas_0002.html)
+3. [Head pose Detection model](https://docs.openvinotoolkit.org/latest/_models_intel_head_pose_estimation_adas_0001_description_head_pose_estimation_adas_0001.html)
+4. [Gaze Estimation model](https://docs.openvinotoolkit.org/latest/_models_intel_gaze_estimation_adas_0002_description_gaze_estimation_adas_0002.html)
 
 ## Benchmarks
 *TODO:* Include the benchmark results of running your model on multiple hardwares and multiple model precisions. Your benchmarks can include: model loading time, input/output processing time, model inference time etc.
