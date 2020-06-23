@@ -86,6 +86,8 @@ class Model_Gaze_Estimation:
         img = img.transpose((2,0,1))
         img = img.reshape(1, *img.shape)
 
+        return img
+
 
     def preprocess_output(self, outputs):
         '''

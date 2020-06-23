@@ -62,6 +62,7 @@ class Model_Head_Pose_Estimation:
         img = self.preprocess_input(image)
         res = self.exec_net.infer({self.input_blob: img})
         out = self.preprocess_output(res, w , h)
+        print(out)
         return out
 
     def check_model(self):
@@ -82,6 +83,8 @@ class Model_Head_Pose_Estimation:
         img = cv2.resize(image.copy(), (net_input_shape[3], net_input_shape[2]))
         img = img.transpose((2,0,1))
         img = img.reshape(1, *img.shape)
+
+        return img
 
     def preprocess_output(self, outputs, w, h):
         '''
