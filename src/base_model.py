@@ -43,8 +43,8 @@ class BaseModel:
 
         # Check Model   
         if not self.check_model():
-            print("Network Error")
-            exit(0)
+            print("Network Error while checking model")
+            exit(1)
         
         # Load network
         self.exec_net = self.core.load_network(self.model, self.device)

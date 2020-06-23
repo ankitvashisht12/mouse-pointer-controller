@@ -86,21 +86,41 @@ def main():
     prob = args.prob
     if prob == None:
         prob = 0.5
+    input_type = args.input_file
+    input_path = args.input_path
+
+    #get logger
+    logger = logging.getLogger()
 
     # Initialize models
-    fd = Model_Face_Detection(args.face_detection, args.device, args.extention)
-    ld = Model_Facial_Landmark_Detection(args.landmark_detection, args.device, args.extention)
-    hp = Model_Head_Pose_Estimation(args.head_pose_detection, args.device, args.extention)
-    gd = Model_Gaze_Estimation(args.gaze_detection, args.device, args.extention)
+    try:
+        fd = Model_Face_Detection(args.face_detection, args.device, args.extention)
+        ld = Model_Facial_Landmark_Detection(args.landmark_detection, args.device, args.extention)
+        hp = Model_Head_Pose_Estimation(args.head_pose_detection, args.device, args.extention)
+        gd = Model_Gaze_Estimation(args.gaze_detection, args.device, args.extention)
+    except:
+        logger.error("Error in initializing models")
+        exit(1)
 
     # load models
-    fd.load_model()
-    ld.load_model()
-    hp.load_model()
-    gd.load_model()
+    try:
+        fd.load_model()
+        ld.load_model()
+        hp.load_model()
+        gd.load_model()
+    except:
+        logger.error("Error in loading the models")
+        exit(1)
+
+    if input_type.lower() != "cam":
+        if not os.path.isfile(input_path):
+            logger.error("Unable to find specified video file")
+            exit(1)
+    else:
+        input_path=None
 
     # Initialize input feed and load data
-    input_feed = InputFeeder(args.input_file, args.input_path)
+    input_feed = InputFeeder(input_type, input_path)
     input_feed.load_data()
 
 
@@ -164,7 +184,7 @@ def main():
             break
         
         
-
+    logger.error("Stream Ended")
     cv2.destroyAllWindows()
     input_feed.close()
     
