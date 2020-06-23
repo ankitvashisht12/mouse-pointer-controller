@@ -24,14 +24,12 @@ def get_args():
     parser.add_argument("-prob", "--prob", required=False, type=float, help="threshod probability")
     return parser.parse_args()
 
-def crop_eyes(frame, coords, start_point, end_point):
+def crop_eyes(frame, coords):
    
-    l  = 40 + abs(coords[1][0] - coords[0][0])  # check for int
-    y = coords[0][1] - l//2
-    left_eye = frame[y : y + l , start_point[0] : start_point[0]+ l, :]
-    right_eye = frame[y : y + l, end_point[0]-l : end_point[0], :]
+    left_eye = frame[coords[0][1] : coords[1][1] , coords[0][0] : coords[1][0]]
+    right_eye = frame[coords[2][1] : coords[3][1] , coords[2][0] : coords[3][0]]
    
-    return left_eye, right_eye, y, l
+    return left_eye, right_eye
 
 def show_visualization(frame, visualization_list, start_point, end_point, eye_bb, eye_coords):
     # draw bounding box around the face
@@ -47,10 +45,6 @@ def show_visualization(frame, visualization_list, start_point, end_point, eye_bb
         frame = cv2.circle(frame, eye_coords[3], 2, (0, 0, 255), thickness=-5)
 
         # draw bounding box around the eyes
-        # frame = cv2.rectangle(img = frame, pt1=(start_point[0], eye_coords[0]), pt2=(start_point[0]+eye_coords[1], eye_coords[0]+eye_coords[1]), color=(255, 0, 0), thickness=2)
-        # frame = cv2.rectangle(img = frame, pt1=(end_point[0]-eye_coords[1], eye_coords[0]), pt2=(end_point[0], eye_coords[0]+eye_coords[1]), color=(255, 0, 0), thickness=2)
-
-        
         frame = cv2.rectangle(img = frame, pt1=eye_bb[0], pt2=eye_bb[1], color=(255, 0, 0), thickness=2)
         frame = cv2.rectangle(img = frame, pt1=eye_bb[2], pt2=eye_bb[3], color=(255, 0, 0), thickness=2)
 
@@ -128,13 +122,13 @@ def main():
         start_right_bb = tuple(sum(x) for x in zip(outs_ld[0][6], start_point))
         end_right_bb = tuple(sum(x) for x in zip(outs_ld[0][7], start_point)) 
 
-        print(outs_ld)
-        left_eye, right_eye, eye_height, eye_width = crop_eyes(frame.copy(), [p1, p2, p3, p4], start_point, end_point)
+       
+        left_eye, right_eye= crop_eyes(frame.copy(), (start_left_bb, end_left_bb, start_right_bb, end_right_bb))
 
                 
-            
         # pitch, roll and yaw estimation on cropped face
         p, r, y = hp.predict(cropped_face.copy())  
+        
         
         # gaze estimation
         outs_gd = gd.predict(left_eye, right_eye, np.array([[y, p, r]]))
