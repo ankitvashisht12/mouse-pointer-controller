@@ -16,11 +16,18 @@ def get_args():
     parser.add_argument("-m2", "--landmark_detection", required=True, type=str, help="Path to landmark detection model")
     parser.add_argument("-m3", "--head_pose_detection", required=True, type=str, help="Path to head pose detection model")
     parser.add_argument("-m4", "--gaze_detection", required=True, type=str, help="Path to gaze detection model")
-    parser.add_argument("-d", "--device", required=False, type=str, help="Specify device", default="CPU")
+    parser.add_argument("-d", "--device", type=str, default="CPU",
+                        help="Specify the target device to infer on: "
+                             "CPU, GPU, FPGA or MYRIAD is acceptable. Sample "
+                             "will look for a suitable plugin for device "
+                             "specified (CPU by default)")
     parser.add_argument("-e", "--extention", required=False, type=str, help="Specify CPU extention", default=None)
     parser.add_argument("-i", "--input_file", required=True, type=str, help="Specify input file type", default="cam")
     parser.add_argument("-p", "--input_path", required=False, type=str, help="Specify input file path", default=None)
-    parser.add_argument("-v", "--visualize", required=False, type=str, nargs='+', help="Specify visualization flags", default = [])
+    parser.add_argument("-v", "--visualize", required=False, type=str, nargs='+', help="Specify the flags from fd, fld, hp, ge like --flags fd hp fld (Seperate each flag by space)"
+                             "for see the visualization of different model outputs of each frame," 
+                             "fd for Face Detection, ld for Facial Landmark Detection"
+                             "hp for Head Pose Estimation, ge for Gaze Estimation.", default = [])
     parser.add_argument("-prob", "--prob", required=False, type=float, help="threshod probability")
     return parser.parse_args()
 
@@ -31,7 +38,7 @@ def crop_eyes(frame, coords):
    
     return left_eye, right_eye
 
-def show_visualization(frame, visualization_list, start_point, end_point, eye_bb, eye_coords):
+def show_visualization(frame, visualization_list, start_point, end_point, eye_bb, eye_coords, hp, ge):
     # draw bounding box around the face
     if 'fd' in visualization_list:
         frame = cv2.rectangle(img=frame, pt1=start_point, pt2=end_point , color=(0, 255, 0) , thickness=2)
@@ -48,12 +55,20 @@ def show_visualization(frame, visualization_list, start_point, end_point, eye_bb
         frame = cv2.rectangle(img = frame, pt1=eye_bb[0], pt2=eye_bb[1], color=(255, 0, 0), thickness=2)
         frame = cv2.rectangle(img = frame, pt1=eye_bb[2], pt2=eye_bb[3], color=(255, 0, 0), thickness=2)
 
-    if 'hp' in visualization_list:
-        pass
+        if 'hp' in visualization_list:
+            cv2.putText(frame, "Pose Angles: pitch:{:.2f} , roll:{:.2f} , yaw:{:.2f}".format(hp[0],hp[1],hp[2]), (10, 20), cv2.FONT_HERSHEY_COMPLEX, 0.25, (0, 0, 255), 1)
+        
+        if 'ge' in visualization_list:
+            # x, y, w = int(ge[0]*12), int(ge[1]*12), 160
+            # le =cv2.line(left_eye.copy(), (x-w, y-w), (x+w, y+w), (255,0,255), 2)
+            # cv2.line(le, (x-w, y+w), (x+w, y-w), (255,0,255), 2)
+            # re = cv2.line(right_eye.copy(), (x-w, y-w), (x+w, y+w), (255,0,255), 2)
+            # cv2.line(re, (x-w, y+w), (x+w, y-w), (255,0,255), 2)
+            pass
+            
 
-    if 'ge' in visualization_list:
-        pass
 
+  
     cv2.imshow("Visualizations", cv2.resize(frame, (500, 500)))
 
 
@@ -141,7 +156,7 @@ def main():
         mc.move(outs_gd[0], outs_gd[1])
 
         if len(visualization_list) != 0:
-            show_frame = show_visualization(frame, visualization_list, start_point, end_point, (start_left_bb, end_left_bb, start_right_bb, end_right_bb), [p1, p2, p3, p4])
+            show_frame = show_visualization(frame, visualization_list, start_point, end_point, (start_left_bb, end_left_bb, start_right_bb, end_right_bb), [p1, p2, p3, p4], (p, r, y) ,outs_gd)
 
         
         key = cv2.waitKey(1)
