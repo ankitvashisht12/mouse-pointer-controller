@@ -17,16 +17,29 @@ class Model_Facial_Landmark_Detection(BaseModel):
         '''
         outs = []
         points = outputs["align_fc3"][0]
-        left_eye_x0 = int(points[0]*w)
-        left_eye_y0 = int(points[1]*h)
-        left_eye_x1 = int(points[2]*w)
-        left_eye_y1 = int(points[3]*h)
+
+        
+        left_eye_x1 = int(points[0]*w)
+        left_eye_y1 = int(points[1]*h)
+        left_eye_x0 = int(points[2]*w)
+        left_eye_y0 = int(points[3]*h)
 
         right_eye_x0 = int(points[4]*w)
         right_eye_y0 = int(points[5]*h)
         right_eye_x1 = int(points[6]*w)
         right_eye_y1 = int(points[7]*h)
         
-        outs.append([(left_eye_x0, left_eye_y0), (left_eye_x1, left_eye_y1), (right_eye_x0, right_eye_y0), (right_eye_x1, right_eye_y1)])
+
+        l1 = int(abs((points[24] - points[28])*w)) + 10
+        l2 = int(abs((points[30] - points[34])*w)) + 10
+
+        start_left = (int(points[24]*w) - 10, int(points[27]*h))
+        end_left = (int(points[28]*w) + 10, int(points[27]*h)+l1)
+
+        start_right = (int(points[30]*w) - 10, int(points[33]*h))
+        end_right = (int(points[34]*w) + 10, int(points[33]*h)+l1)
+
+
+        outs.append([(left_eye_x0, left_eye_y0), (left_eye_x1, left_eye_y1), (right_eye_x0, right_eye_y0), (right_eye_x1, right_eye_y1), start_left, end_left, start_right, end_right])
 
         return outs

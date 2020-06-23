@@ -15,9 +15,9 @@ class Model_Face_Detection(BaseModel):
         Before feeding the output of this model to the next model,
         you might have to preprocess the output. This function is where you can do that.
         '''
-        outs = []
+        
         for box in outputs["detection_out"][0][0]:
             if box[1] == 1 and box[2] > prob:
-                outs.append([int(box[3]*w), int(box[4]*h), int(box[5]*w), int(box[6]*h)])
+                return (int(box[3]*w), int(box[4]*h)) , (int(box[5]*w), int(box[6]*h))
 
-        return outs
+        return []
