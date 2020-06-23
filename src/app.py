@@ -1,5 +1,6 @@
 # Imports
 import logging
+import time
 from face_detection import Model_Face_Detection
 from facial_landmark_detection import Model_Facial_Landmark_Detection
 from gaze_estimation import Model_Gaze_Estimation
@@ -7,6 +8,7 @@ from head_pose_estimation import Model_Head_Pose_Estimation
 from input_feeder import InputFeeder
 from mouse_controller import MouseController
 import cv2
+import os
 from argparse import ArgumentParser
 import numpy as np
 
@@ -38,6 +40,7 @@ def crop_eyes(frame, coords):
    
     return left_eye, right_eye
 
+
 def show_visualization(frame, visualization_list, start_point, end_point, eye_bb, eye_coords, hp, ge):
     # draw bounding box around the face
     if 'fd' in visualization_list:
@@ -55,21 +58,22 @@ def show_visualization(frame, visualization_list, start_point, end_point, eye_bb
         frame = cv2.rectangle(img = frame, pt1=eye_bb[0], pt2=eye_bb[1], color=(255, 0, 0), thickness=2)
         frame = cv2.rectangle(img = frame, pt1=eye_bb[2], pt2=eye_bb[3], color=(255, 0, 0), thickness=2)
 
-        if 'hp' in visualization_list:
-            cv2.putText(frame, "Pose Angles: pitch:{:.2f} , roll:{:.2f} , yaw:{:.2f}".format(hp[0],hp[1],hp[2]), (10, 20), cv2.FONT_HERSHEY_COMPLEX, 0.25, (0, 0, 255), 1)
+    if 'hp' in visualization_list:
+        cv2.putText(frame, "Pose Angles: pitch:{:.2f} , roll:{:.2f} , yaw:{:.2f}".format(hp[0],hp[1],hp[2]), (10, 20), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2   )
+    
+    if 'ge' in visualization_list:
+        arrow = 0.4*abs(end_point[0] - start_point[0])
+        g_x = int(ge[0]*arrow)
+        g_y = int(-(ge[1])*arrow)
+        le_mid_x = int((eye_coords[0][0] + eye_coords[1][0])/2)
+        le_mid_y  =int((eye_coords[0][1] + eye_coords[1][1])/2)
+        re_mid_x = int((eye_coords[2][0] + eye_coords[3][0])/2)
+        re_mid_y = int((eye_coords[2][1] + eye_coords[3][1])/2)
         
-        if 'ge' in visualization_list:
-            # x, y, w = int(ge[0]*12), int(ge[1]*12), 160
-            # le =cv2.line(left_eye.copy(), (x-w, y-w), (x+w, y+w), (255,0,255), 2)
-            # cv2.line(le, (x-w, y+w), (x+w, y-w), (255,0,255), 2)
-            # re = cv2.line(right_eye.copy(), (x-w, y-w), (x+w, y+w), (255,0,255), 2)
-            # cv2.line(re, (x-w, y+w), (x+w, y-w), (255,0,255), 2)
-            pass
-            
-
-
-  
-    cv2.imshow("Visualizations", cv2.resize(frame, (500, 500)))
+        frame = cv2.arrowedLine(frame, (le_mid_x, le_mid_y), (le_mid_x+g_x, le_mid_y+g_y), (0, 0, 255), 3)
+        frame = cv2.arrowedLine(frame, (re_mid_x, re_mid_y), (re_mid_x+g_x, re_mid_y+g_y), (0, 0, 255), 3)
+        
+    cv2.imshow("Visualizations", cv2.resize(frame, (700, 500)))
 
 
 def crop_face(start_point, end_point, frame):
@@ -89,8 +93,9 @@ def main():
     input_type = args.input_file
     input_path = args.input_path
 
-    #get logger
-    logger = logging.getLogger()
+    #logging config
+    
+    logging.basicConfig(filename="app.log", level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
 
     # Initialize models
     try:
@@ -99,22 +104,32 @@ def main():
         hp = Model_Head_Pose_Estimation(args.head_pose_detection, args.device, args.extention)
         gd = Model_Gaze_Estimation(args.gaze_detection, args.device, args.extention)
     except:
-        logger.error("Error in initializing models")
+        logging.error("Error in initializing models")
         exit(1)
 
     # load models
     try:
+        start_loading_time_fd = time.time()
         fd.load_model()
+        fd_time_diff = time.time() - start_loading_time_fd
+        start_loading_time_ld = time.time()
         ld.load_model()
+        ld_time_diff = time.time() - start_loading_time_ld
+        start_loading_time_hp = time.time()
         hp.load_model()
+        hp_time_diff = time.time() - start_loading_time_hp
+        start_loading_time_gd = time.time()
         gd.load_model()
+        gd_time_diff = time.time() - start_loading_time_gd
     except:
-        logger.error("Error in loading the models")
+        logging.error("Error in loading the models")
         exit(1)
+
+    logging.debug("Loading times are facial detection : {} , landmark detection : {} , head pose detection : {} , gaze estimation : {} ".format(fd_time_diff, ld_time_diff, hp_time_diff, gd_time_diff))
 
     if input_type.lower() != "cam":
         if not os.path.isfile(input_path):
-            logger.error("Unable to find specified video file")
+            logging.error("Unable to find specified video file")
             exit(1)
     else:
         input_path=None
@@ -124,13 +139,16 @@ def main():
     input_feed.load_data()
 
 
+    avg_inf_time = {"fd":[], "ld":[], "hp":[], "gd":[]}
+
     for ret, frame in input_feed.next_batch():
+        
         
         if not ret:
             break
 
         show_frame =frame
-        outs_fd = fd.predict(frame.copy(), prob) 
+        outs_fd, fd_inf_time = fd.predict(frame.copy(), prob) 
       
         if len(outs_fd) == 0:
             continue
@@ -142,7 +160,7 @@ def main():
 
            
         # predict facial landmark on cropped image 
-        outs_ld = ld.predict(cropped_face.copy())
+        outs_ld, ld_inf_time = ld.predict(cropped_face.copy())
         if len(outs_ld) == 0:
             continue
                 
@@ -162,11 +180,17 @@ def main():
 
                 
         # pitch, roll and yaw estimation on cropped face
-        p, r, y = hp.predict(cropped_face.copy())  
-        
+        outs_hp , hp_inf_time= hp.predict(cropped_face.copy())  
+        p, r, y = outs_hp
         
         # gaze estimation
-        outs_gd = gd.predict(left_eye, right_eye, np.array([[y, p, r]]))
+        outs_gd, gd_inf_time = gd.predict(left_eye, right_eye, np.array([[y, p, r]]))
+
+        # adding inference time to dictionary
+        avg_inf_time["fd"].append(fd_inf_time)
+        avg_inf_time["ld"].append(ld_inf_time)
+        avg_inf_time["hp"].append(hp_inf_time)
+        avg_inf_time["gd"].append(gd_inf_time)
 
         ## Control Mouse pointer 
         mc = MouseController("high", "fast")
@@ -176,15 +200,18 @@ def main():
         mc.move(outs_gd[0], outs_gd[1])
 
         if len(visualization_list) != 0:
-            show_frame = show_visualization(frame, visualization_list, start_point, end_point, (start_left_bb, end_left_bb, start_right_bb, end_right_bb), [p1, p2, p3, p4], (p, r, y) ,outs_gd)
+            show_visualization(frame, visualization_list, start_point, end_point, (start_left_bb, end_left_bb, start_right_bb, end_right_bb), [p1, p2, p3, p4], (p, r, y) ,outs_gd)
 
         
         key = cv2.waitKey(1)
         if key == ord('q'):
             break
         
-        
-    logger.error("Stream Ended")
+
+    logging.debug("Average inf. time are fd : {}, ld : {}, hp : {}, gd : {}".format(sum(avg_inf_time["fd"])/ len(avg_inf_time["fd"]), sum(avg_inf_time["ld"])/ len(avg_inf_time["ld"]), sum(avg_inf_time["hp"])/ len(avg_inf_time["hp"]) ,sum(avg_inf_time["gd"])/ len(avg_inf_time["gd"])))    
+    logging.debug("Total inf. time are fd : {}, ld : {}, hp : {}, gd : {}".format(sum(avg_inf_time["fd"]), sum(avg_inf_time["ld"]), sum(avg_inf_time["hp"]) ,sum(avg_inf_time["gd"])))
+    logging.debug("FPS time are fd : {}, ld : {}, hp : {}, gd : {}".format(1/(sum(avg_inf_time["fd"])/ len(avg_inf_time["fd"])), 1/(sum(avg_inf_time["ld"])/ len(avg_inf_time["ld"])), 1/(sum(avg_inf_time["hp"])/ len(avg_inf_time["hp"])) ,1 / (sum(avg_inf_time["gd"])/ len(avg_inf_time["gd"]))))
+    logging.info("Stream Ended")
     cv2.destroyAllWindows()
     input_feed.close()
     
