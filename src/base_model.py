@@ -3,6 +3,7 @@ This is a base class for a model.
 '''
 
 import os
+import time
 import cv2
 from openvino.inference_engine import IENetwork, IECore
 
@@ -62,9 +63,11 @@ class BaseModel:
         h = image.shape[0]
 
         img = self.preprocess_input(image)
+        start_inf = time.time()
         res = self.exec_net.infer({self.input_blob: img})
+        diff_inf = time.time() - start_inf
         out = self.preprocess_output(res, w , h, prob)
-        return out
+        return out, diff_inf
 
     def check_model(self):
         

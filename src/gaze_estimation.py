@@ -2,7 +2,7 @@
 This is a sample class for a model. You may choose to use it as-is or make any changes to it.
 This has been provided just to give you an idea of how to structure your model class.
 '''
-
+import time
 import cv2
 from base_model import BaseModel
 
@@ -20,9 +20,11 @@ class Model_Gaze_Estimation(BaseModel):
         left_eye = self.preprocess_input(left_eye)
         right_eye = self.preprocess_input(right_eye)
         inputs = {"head_pose_angles" : head_pose_outs, "left_eye_image" : left_eye, "right_eye_image" : right_eye}
-        res = self.exec_net.infer(inputs)
         
-        return res['gaze_vector'][0]
+        start_inf = time.time()
+        res = self.exec_net.infer(inputs)
+        diff_inf = time.time() - start_inf
+        return res['gaze_vector'][0], diff_inf
         
 
 
