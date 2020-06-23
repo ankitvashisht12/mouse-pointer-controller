@@ -33,7 +33,7 @@ class BaseModel:
         If your model requires any Plugins, this is where you can load them.
         '''
         self.core = IECore()
-        self.model = self.core.read_network(self.model_structure, self.model_weights)
+        self.model = IENetwork(self.model_structure, self.model_weights)
 
     
 
