@@ -40,6 +40,7 @@ def crop_eyes(frame, coords):
    
     return left_eye, right_eye
 
+
 def show_visualization(frame, visualization_list, start_point, end_point, eye_bb, eye_coords, hp, ge):
     # draw bounding box around the face
     if 'fd' in visualization_list:
@@ -57,20 +58,21 @@ def show_visualization(frame, visualization_list, start_point, end_point, eye_bb
         frame = cv2.rectangle(img = frame, pt1=eye_bb[0], pt2=eye_bb[1], color=(255, 0, 0), thickness=2)
         frame = cv2.rectangle(img = frame, pt1=eye_bb[2], pt2=eye_bb[3], color=(255, 0, 0), thickness=2)
 
-        if 'hp' in visualization_list:
-            cv2.putText(frame, "Pose Angles: pitch:{:.2f} , roll:{:.2f} , yaw:{:.2f}".format(hp[0],hp[1],hp[2]), (10, 20), cv2.FONT_HERSHEY_COMPLEX, 0.25, (0, 0, 255), 1)
+    if 'hp' in visualization_list:
+        cv2.putText(frame, "Pose Angles: pitch:{:.2f} , roll:{:.2f} , yaw:{:.2f}".format(hp[0],hp[1],hp[2]), (10, 20), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2   )
+    
+    if 'ge' in visualization_list:
+        arrow = 0.4*abs(end_point[0] - start_point[0])
+        g_x = int(ge[0]*arrow)
+        g_y = int(-(ge[1])*arrow)
+        le_mid_x = int((eye_coords[0][0] + eye_coords[1][0])/2)
+        le_mid_y  =int((eye_coords[0][1] + eye_coords[1][1])/2)
+        re_mid_x = int((eye_coords[2][0] + eye_coords[3][0])/2)
+        re_mid_y = int((eye_coords[2][1] + eye_coords[3][1])/2)
         
-        if 'ge' in visualization_list:
-            # x, y, w = int(ge[0]*12), int(ge[1]*12), 160
-            # le =cv2.line(left_eye.copy(), (x-w, y-w), (x+w, y+w), (255,0,255), 2)
-            # cv2.line(le, (x-w, y+w), (x+w, y-w), (255,0,255), 2)
-            # re = cv2.line(right_eye.copy(), (x-w, y-w), (x+w, y+w), (255,0,255), 2)
-            # cv2.line(re, (x-w, y+w), (x+w, y-w), (255,0,255), 2)
-            pass
-            
-
-
-  
+        frame = cv2.arrowedLine(frame, (le_mid_x, le_mid_y), (le_mid_x+g_x, le_mid_y+g_y), (0, 0, 255), 3)
+        frame = cv2.arrowedLine(frame, (re_mid_x, re_mid_y), (re_mid_x+g_x, re_mid_y+g_y), (0, 0, 255), 3)
+        
     cv2.imshow("Visualizations", cv2.resize(frame, (700, 500)))
 
 
